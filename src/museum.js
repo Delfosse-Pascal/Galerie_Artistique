@@ -207,83 +207,103 @@ export function buildMuseum(scene) {
     c4:        { minX: -1,  maxX: 1,  minZ: 36, maxZ: 39, h: 4 },
   };
 
+  // ================== PASTEL PALETTE (mode visibilité temporaire) ==================
+  const pastelColors = {
+    lobby:     { wall: 0xf5e8d3, floor: 0xd9c7a8, ceiling: 0xfaf0df },
+    r1:        { wall: 0xf7d4c0, floor: 0xd8a893, ceiling: 0xfcdfcd }, // pêche
+    r2:        { wall: 0xc9d6e8, floor: 0x9cb0c8, ceiling: 0xdce6f2 }, // bleu
+    r3:        { wall: 0xd4c5dc, floor: 0xa795b0, ceiling: 0xe2d4e8 }, // mauve
+    atelier:   { wall: 0xf2e3a8, floor: 0xcfb772, ceiling: 0xf7ecbc }, // jaune
+    immersive: { wall: 0xc4dcc8, floor: 0x8eb097, ceiling: 0xd6e8d9 }, // menthe
+    r4:        { wall: 0xe8c8c8, floor: 0xbd9695, ceiling: 0xf0d9d9 }, // rose
+    c1:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
+    c2:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
+    c3:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
+    c4:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
+  };
+  const rm = {};
+  for (const k of Object.keys(pastelColors)) {
+    const p = pastelColors[k];
+    rm[k] = {
+      wall:    new THREE.MeshStandardMaterial({ color: p.wall,    roughness: 0.85, metalness: 0 }),
+      floor:   new THREE.MeshStandardMaterial({ color: p.floor,   roughness: 0.75, metalness: 0 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: p.ceiling, roughness: 0.95, metalness: 0 }),
+    };
+  }
+
   // ================== FLOORS & CEILINGS ==================
   for (const key of Object.keys(rooms)) {
     const r = rooms[key];
-    const floorMat = (key === 'r4') ? mats.darkConcrete : mats.floorStone;
-    addFloor(root, floorMat, r.minX, r.maxX, r.minZ, r.maxZ);
-    addCeiling(root, mats.ceiling, r.minX, r.maxX, r.minZ, r.maxZ, r.h);
+    addFloor(root, rm[key].floor, r.minX, r.maxX, r.minZ, r.maxZ);
+    addCeiling(root, rm[key].ceiling, r.minX, r.maxX, r.minZ, r.maxZ, r.h);
   }
 
-  // ================== OUTER GROUND (optional patio feel) ==================
+  // ================== OUTER GROUND ==================
   const groundGeom = new THREE.PlaneGeometry(100, 100);
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x15120e, roughness: 1 });
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0xd8cfbe, roughness: 1 });
   const ground = new THREE.Mesh(groundGeom, groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.set(0, -0.05, 20);
   ground.receiveShadow = true;
   root.add(ground);
 
-  // ================== WALLS ==================
-  const W = mats.concrete;
-  const WD = mats.darkConcrete;
+  // ================== WALLS (pastel par salle) ==================
 
-  // ---- LOBBY (z: -3 to 3, x: -4 to 4, h:5) ----
-  wallX(root, aabbs, W, -4, 4, -3, 5);                        // south (facade)
-  wallXWithDoor(root, aabbs, W, -4, 4, 3, 5, 0);              // north → corridor c1
-  wallZ(root, aabbs, W, -4, -3, 3, 5);                        // west
-  wallZ(root, aabbs, W, 4, -3, 3, 5);                         // east
+  // ---- LOBBY ----
+  wallX(root, aabbs, rm.lobby.wall, -4, 4, -3, 5);
+  wallXWithDoor(root, aabbs, rm.lobby.wall, -4, 4, 3, 5, 0);
+  wallZ(root, aabbs, rm.lobby.wall, -4, -3, 3, 5);
+  wallZ(root, aabbs, rm.lobby.wall, 4, -3, 3, 5);
 
-  // ---- C1 (corridor) walls ----
-  wallZ(root, aabbs, W, -1, 3, 6, 4);
-  wallZ(root, aabbs, W, 1, 3, 6, 4);
+  // ---- C1 ----
+  wallZ(root, aabbs, rm.c1.wall, -1, 3, 6, 4);
+  wallZ(root, aabbs, rm.c1.wall, 1, 3, 6, 4);
 
-  // ---- R1 JEUNESSE (z: 6 to 14) ----
-  wallXWithDoor(root, aabbs, W, -6, 6, 6, 5, 0);              // south → c1
-  wallXWithDoor(root, aabbs, W, -6, 6, 14, 5, 0);             // north → c2
-  wallZ(root, aabbs, W, -6, 6, 14, 5);                        // west
-  wallZ(root, aabbs, W, 6, 6, 14, 5);                         // east
+  // ---- R1 JEUNESSE (pêche) ----
+  wallXWithDoor(root, aabbs, rm.r1.wall, -6, 6, 6, 5, 0);
+  wallXWithDoor(root, aabbs, rm.r1.wall, -6, 6, 14, 5, 0);
+  wallZ(root, aabbs, rm.r1.wall, -6, 6, 14, 5);
+  wallZ(root, aabbs, rm.r1.wall, 6, 6, 14, 5);
 
   // ---- C2 ----
-  wallZ(root, aabbs, W, -1, 14, 17, 4);
-  wallZ(root, aabbs, W, 1, 14, 17, 4);
+  wallZ(root, aabbs, rm.c2.wall, -1, 14, 17, 4);
+  wallZ(root, aabbs, rm.c2.wall, 1, 14, 17, 4);
 
-  // ---- R2 ERRANCE (z: 17 to 25) ----
-  wallXWithDoor(root, aabbs, W, -6, 6, 17, 5, 0);
-  wallXWithDoor(root, aabbs, W, -6, 6, 25, 5, 0);
-  wallZ(root, aabbs, W, -6, 17, 25, 5);
-  wallZ(root, aabbs, W, 6, 17, 25, 5);
+  // ---- R2 ERRANCE (bleu) ----
+  wallXWithDoor(root, aabbs, rm.r2.wall, -6, 6, 17, 5, 0);
+  wallXWithDoor(root, aabbs, rm.r2.wall, -6, 6, 25, 5, 0);
+  wallZ(root, aabbs, rm.r2.wall, -6, 17, 25, 5);
+  wallZ(root, aabbs, rm.r2.wall, 6, 17, 25, 5);
 
   // ---- C3 ----
-  wallZ(root, aabbs, WD, -1, 25, 28, 4);
-  wallZ(root, aabbs, WD, 1, 25, 28, 4);
+  wallZ(root, aabbs, rm.c3.wall, -1, 25, 28, 4);
+  wallZ(root, aabbs, rm.c3.wall, 1, 25, 28, 4);
 
-  // ---- R3 HANTISES (z: 28 to 36, dark) ----
-  wallXWithDoor(root, aabbs, WD, -5, 5, 28, 4, 0);            // south → c3
-  wallXWithDoor(root, aabbs, WD, -5, 5, 36, 4, 0);            // north → c4
-  wallZWithDoor(root, aabbs, WD, -5, 28, 36, 4, 33);          // west → immersive
-  wallZWithDoor(root, aabbs, WD, 5, 28, 36, 4, 33);           // east → atelier
+  // ---- R3 HANTISES (mauve) ----
+  wallXWithDoor(root, aabbs, rm.r3.wall, -5, 5, 28, 4, 0);
+  wallXWithDoor(root, aabbs, rm.r3.wall, -5, 5, 36, 4, 0);
+  wallZWithDoor(root, aabbs, rm.r3.wall, -5, 28, 36, 4, 33);
+  wallZWithDoor(root, aabbs, rm.r3.wall, 5, 28, 36, 4, 33);
 
-  // ---- ATELIER (z: 30 to 36, x: 5 to 11) ----
-  // east wall of r3 already has door at z=33; we need opposite walls of atelier
-  wallX(root, aabbs, mats.oak, 5, 11, 30, 4);                 // south
-  wallX(root, aabbs, mats.oak, 5, 11, 36, 4);                 // north
-  wallZ(root, aabbs, mats.oak, 11, 30, 36, 4);                // east
+  // ---- ATELIER (jaune) ----
+  wallX(root, aabbs, rm.atelier.wall, 5, 11, 30, 4);
+  wallX(root, aabbs, rm.atelier.wall, 5, 11, 36, 4);
+  wallZ(root, aabbs, rm.atelier.wall, 11, 30, 36, 4);
 
-  // ---- IMMERSIVE (z: 30 to 38, x: -11 to -5, h:6) ----
-  wallX(root, aabbs, WD, -11, -5, 30, 6);
-  wallX(root, aabbs, WD, -11, -5, 38, 6);
-  wallZ(root, aabbs, WD, -11, 30, 38, 6);
+  // ---- IMMERSIVE (menthe) ----
+  wallX(root, aabbs, rm.immersive.wall, -11, -5, 30, 6);
+  wallX(root, aabbs, rm.immersive.wall, -11, -5, 38, 6);
+  wallZ(root, aabbs, rm.immersive.wall, -11, 30, 38, 6);
 
   // ---- C4 ----
-  wallZ(root, aabbs, W, -1, 36, 39, 4);
-  wallZ(root, aabbs, W, 1, 36, 39, 4);
+  wallZ(root, aabbs, rm.c4.wall, -1, 36, 39, 4);
+  wallZ(root, aabbs, rm.c4.wall, 1, 36, 39, 4);
 
-  // ---- R4 DERNIERS LIEUX (z: 39 to 51, x: -8 to 8, h:10) ----
-  wallXWithDoor(root, aabbs, W, -8, 8, 39, 10, 0, DOOR_W, 3.2);
-  wallX(root, aabbs, W, -8, 8, 51, 10);
-  wallZ(root, aabbs, W, -8, 39, 51, 10);
-  wallZ(root, aabbs, W, 8, 39, 51, 10);
+  // ---- R4 DERNIERS LIEUX (rose) ----
+  wallXWithDoor(root, aabbs, rm.r4.wall, -8, 8, 39, 10, 0, DOOR_W, 3.2);
+  wallX(root, aabbs, rm.r4.wall, -8, 8, 51, 10);
+  wallZ(root, aabbs, rm.r4.wall, -8, 39, 51, 10);
+  wallZ(root, aabbs, rm.r4.wall, 8, 39, 51, 10);
 
   // ================== ARCHITECTURAL DETAILS ==================
 
@@ -292,9 +312,10 @@ export function buildMuseum(scene) {
   addBox(root, aabbs, mats.oak, -2.5, 0.5, 0, 1.2, 1.0, 0.6);     // reception desk
 
   // Monumental columns in R4
+  const columnMat = new THREE.MeshStandardMaterial({ color: 0xd8b0b0, roughness: 0.85, metalness: 0 });
   for (const cx of [-4, 4]) {
     for (const cz of [43, 47]) {
-      addBox(root, aabbs, mats.darkConcrete, cx, 5, cz, 0.6, 10, 0.6);
+      addBox(root, aabbs, columnMat, cx, 5, cz, 0.6, 10, 0.6);
     }
   }
 

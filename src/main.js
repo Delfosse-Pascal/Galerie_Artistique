@@ -22,17 +22,18 @@ app.appendChild(renderer.domElement);
 
 // ---------- Scene ----------
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x07060a);
-scene.fog = new THREE.FogExp2(0x0b0a0f, 0.018);
+scene.background = new THREE.Color(0xe8dfd1);
+// Fog désactivé temporairement — mode visibilité pastel
+// scene.fog = new THREE.FogExp2(0xe8dfd1, 0.004);
 
 // ---------- Camera ----------
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 200);
 camera.position.set(0, 1.65, -1);
 
-// ---------- Ambient low fill (stone reflection) ----------
-const hemi = new THREE.HemisphereLight(0x9bb0c9, 0x1a1510, 0.18);
+// ---------- Ambient — mode pastel visibilité ----------
+const hemi = new THREE.HemisphereLight(0xfff3e0, 0xd0c8b8, 1.3);
 scene.add(hemi);
-const keyAmbient = new THREE.AmbientLight(0x2a2620, 0.12);
+const keyAmbient = new THREE.AmbientLight(0xffffff, 0.75);
 scene.add(keyAmbient);
 
 // ---------- Museum architecture ----------
