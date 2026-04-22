@@ -207,31 +207,21 @@ export function buildMuseum(scene) {
     c4:        { minX: -1,  maxX: 1,  minZ: 36, maxZ: 39, h: 4 },
   };
 
-  // ================== PASTEL PALETTE (mode visibilité temporaire) ==================
-  const pastelColors = {
-    lobby:     { wall: 0xf5e8d3, floor: 0xd9c7a8, ceiling: 0xfaf0df },
-    r1:        { wall: 0xf7d4c0, floor: 0xd8a893, ceiling: 0xfcdfcd }, // pêche
-    r2:        { wall: 0xc9d6e8, floor: 0x9cb0c8, ceiling: 0xdce6f2 }, // bleu
-    r3:        { wall: 0xd4c5dc, floor: 0xa795b0, ceiling: 0xe2d4e8 }, // mauve
-    atelier:   { wall: 0xf2e3a8, floor: 0xcfb772, ceiling: 0xf7ecbc }, // jaune
-    immersive: { wall: 0xc4dcc8, floor: 0x8eb097, ceiling: 0xd6e8d9 }, // menthe
-    r4:        { wall: 0xe8c8c8, floor: 0xbd9695, ceiling: 0xf0d9d9 }, // rose
-    c1:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
-    c2:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
-    c3:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
-    c4:        { wall: 0xf0e4d0, floor: 0xc9b896, ceiling: 0xf7eedb },
-  };
+  // ================== BASE MATERIAL PALETTE (neutres blancs — textures appliquées via admin) ==================
+  // Toutes les salles partagent la même base blanche : les textures mosaic
+  // placees au lancement (admin.js) donnent le rendu final.
+  const BASE_WALL = 0xffffff, BASE_FLOOR = 0xf1ece3, BASE_CEIL = 0xf8f3e8;
+  const roomKeys = ['lobby','r1','r2','r3','atelier','immersive','r4','c1','c2','c3','c4'];
   const rm = {};
-  for (const k of Object.keys(pastelColors)) {
-    const p = pastelColors[k];
+  for (const k of roomKeys) {
     rm[k] = {
-      wall:    new THREE.MeshStandardMaterial({ color: p.wall,    roughness: 0.85, metalness: 0 }),
-      floor:   new THREE.MeshStandardMaterial({ color: p.floor,   roughness: 0.75, metalness: 0 }),
-      ceiling: new THREE.MeshStandardMaterial({ color: p.ceiling, roughness: 0.95, metalness: 0 }),
+      wall:    new THREE.MeshStandardMaterial({ color: BASE_WALL,  roughness: 0.85, metalness: 0 }),
+      floor:   new THREE.MeshStandardMaterial({ color: BASE_FLOOR, roughness: 0.75, metalness: 0 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: BASE_CEIL,  roughness: 0.95, metalness: 0 }),
     };
-    rm[k].wall.userData    = { surface: 'wall',    room: k, baseColor: p.wall };
-    rm[k].floor.userData   = { surface: 'floor',   room: k, baseColor: p.floor };
-    rm[k].ceiling.userData = { surface: 'ceiling', room: k, baseColor: p.ceiling };
+    rm[k].wall.userData    = { surface: 'wall',    room: k, baseColor: BASE_WALL };
+    rm[k].floor.userData   = { surface: 'floor',   room: k, baseColor: BASE_FLOOR };
+    rm[k].ceiling.userData = { surface: 'ceiling', room: k, baseColor: BASE_CEIL };
   }
 
   // ================== FLOORS & CEILINGS ==================

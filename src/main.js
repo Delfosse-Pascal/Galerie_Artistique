@@ -87,19 +87,19 @@ function closePainting() {
   modalOpen = false;
 }
 
-// Click on painting (only while pointer locked — crosshair in centre)
+// Click on painting (only while pointer locked — crosshair in centre).
+// Raycast against the full scene so walls and frames occlude distant paintings:
+// the painting only opens if it is the FIRST object hit along the line of sight.
 renderer.domElement.addEventListener('click', () => {
   if (modalOpen) return;
   if (!document.pointerLockElement) return; // first click just locks pointer
   raycaster.setFromCamera(centerNdc, camera);
-  const meshes = paintingMeshes.map(p => p.mesh);
-  const hits = raycaster.intersectObjects(meshes, false);
-  if (hits.length) {
-    const h = hits[0];
-    if (h.distance < 5.0) {
-      const pm = paintingMeshes.find(p => p.mesh === h.object);
-      if (pm) openPainting(pm);
-    }
+  const hits = raycaster.intersectObject(scene, true);
+  if (!hits.length) return;
+  const first = hits[0];
+  if (first.object.userData && first.object.userData.painting) {
+    const pm = paintingMeshes.find(p => p.mesh === first.object);
+    if (pm) openPainting(pm);
   }
 });
 

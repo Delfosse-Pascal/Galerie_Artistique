@@ -48,8 +48,24 @@ export async function initAdmin(ctx) {
   applyAmbiance(state.ambiance);
   applyZoom(state.zoom);
 
+  // Place les textures mosaic immédiatement (3 textures différentes pour mur/sol/plafond)
+  await applyDefaultTextures();
+
   buildUI();
   updateStats();
+}
+
+async function applyDefaultTextures() {
+  if (state.textures.length < 1) return;
+  const pick = (offset) => state.textures[offset % state.textures.length];
+  state.idx.wall    = 0;
+  state.idx.floor   = Math.min(1, state.textures.length - 1);
+  state.idx.ceiling = Math.min(2, state.textures.length - 1);
+  await Promise.all([
+    applyTexture('wall',    pick(state.idx.wall),    4),
+    applyTexture('floor',   pick(state.idx.floor),   6),
+    applyTexture('ceiling', pick(state.idx.ceiling), 3),
+  ]);
 }
 
 async function loadManifest() {
