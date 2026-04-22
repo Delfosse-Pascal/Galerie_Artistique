@@ -73,8 +73,8 @@ Ouvrir avec `F1` ou l'icône ⚙. Actions disponibles :
 | Actions | Rafraîchir | réapplique ambiance + rafraîchit stats |
 | Actions | Re-scanner dossier | recharge `texturegif/manifest.json` |
 | Actions | Changer dossier | prompt pour nouveau chemin textures |
-| Textures | Changer texture mur/plafond/sol | cycle suivant dans la liste mosaic |
-| Textures | Aléatoire | tire une texture au hasard sur les 3 surfaces |
+| Textures | Changer texture mur/plafond/sol | cycle dans le pool dédié à la surface (jamais cross-surface) |
+| Textures | Aléatoire | tire une texture au hasard **dans chaque pool respectif** |
 | Textures | Réinitialiser | retire map, revient au blanc neutre |
 | Cadres | Dropdown style | Or / Argent / Bronze / Bois foncé / Noir mat / Blanc |
 | Ambiance | Slider 0-100% | hemi + ambient + tone-mapping exposure |
@@ -94,10 +94,25 @@ Placez librement vos fichiers dans ces dossiers, puis relancez `start.bat`.
 |---|---|---|
 | `images/` | `.jpg .jpeg .png .webp` | tableaux du musée — ordre alphabétique, 29 emplacements max |
 | `musiques/` | `.mp3 .ogg .wav .m4a .flac` | pistes du lecteur, démarrage aléatoire |
-| `texturegif/` | `.gif .png .jpg` | textures mosaic appliquées via admin |
+| `texturegif/mur/` | `.gif .jpg .jpeg .png .webp` | textures réservées aux murs |
+| `texturegif/plafond/` | idem | textures réservées aux plafonds |
+| `texturegif/sol/` | idem | textures réservées aux sols |
 | `videos/` | — | emplacement réservé |
 
 Le générateur `scripts/gen_manifests.py` construit les `manifest.json` correspondants que le front récupère au chargement.
+
+**Textures cloisonnées par surface** — chaque sous-dossier `texturegif/{mur,plafond,sol}` alimente uniquement sa propre surface. Le tirage aléatoire à l'ouverture, le bouton `🎲 Aléatoire` et le cycle `Changer texture des murs/plafond/sol` restent strictement dans le pool correspondant : une texture placée dans `texturegif/sol/` ne peut jamais apparaître au plafond ou sur un mur.
+
+Schéma du manifest `texturegif/manifest.json` :
+
+```json
+{
+  "folder": "texturegif",
+  "mur":     ["Mur (1).jpg", "Mur (2).jpg", "..."],
+  "plafond": ["Plafond (1).gif", "..."],
+  "sol":     ["Sol (1).gif", "..."]
+}
+```
 
 ## Emplacements de tableaux (29 slots)
 
@@ -129,7 +144,10 @@ Galerie_Artistique/
 ├── images/                # tiroir tableaux (non versionné, sauf .gitkeep + manifest.json)
 ├── musiques/              # tiroir audio (non versionné)
 ├── videos/                # tiroir vidéo (non versionné)
-├── texturegif/            # tiroir textures mosaic (non versionné)
+├── texturegif/            # tiroir textures (non versionné)
+│   ├── mur/               #   → appliquées uniquement aux murs
+│   ├── plafond/           #   → appliquées uniquement aux plafonds
+│   └── sol/               #   → appliquées uniquement aux sols
 ├── muse.txt               # cahier des charges
 ├── .gitignore
 └── README.md

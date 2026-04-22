@@ -7,11 +7,15 @@ import * as Music from './music.js';
 //  Works on materials tagged via userData.surface = 'wall'|'floor'|'ceiling'
 // =======================================================================
 
+// Chaque surface a sa propre sous-dossier : les textures de mur ne vont
+// jamais sur le plafond ni le sol, etc.
+const SUBFOLDER = { wall: 'mur', ceiling: 'plafond', floor: 'sol' };
+
 const state = {
-  textures: [],               // list of GIF filenames from manifest
-  folder: 'texturegif',       // current texture folder
+  folder: 'texturegif',       // racine des sous-dossiers
   imageFolder: 'images',
-  loadedTex: new Map(),       // filename -> THREE.Texture (cached)
+  texturesBySurface: { wall: [], floor: [], ceiling: [] },   // listes par surface
+  loadedTex: new Map(),       // "surface::filename" -> THREE.Texture (cache)
   idx: { wall: 0, floor: 0, ceiling: 0 },
   ambiance: 0.60,             // 0..1
   zoom: 1.0,
@@ -57,15 +61,22 @@ export async function initAdmin(ctx) {
 }
 
 async function applyDefaultTextures() {
-  if (state.textures.length < 1) return;
-  const pick = (offset) => state.textures[offset % state.textures.length];
-  state.idx.wall    = 0;
-  state.idx.floor   = Math.min(1, state.textures.length - 1);
-  state.idx.ceiling = Math.min(2, state.textures.length - 1);
+  // Tire une texture aléatoire dans le sous-dossier dédié à chaque surface.
+  // Garanti : mur ne reçoit que des fichiers de texturegif/mur, etc.
+  const pickRandom = (surface) => {
+    const pool = state.texturesBySurface[surface];
+    if (!pool.length) return null;
+    const i = Math.floor(Math.random() * pool.length);
+    state.idx[surface] = i;
+    return pool[i];
+  };
+  const w = pickRandom('wall');
+  const f = pickRandom('floor');
+  const c = pickRandom('ceiling');
   await Promise.all([
-    applyTexture('wall',    pick(state.idx.wall),    4),
-    applyTexture('floor',   pick(state.idx.floor),   6),
-    applyTexture('ceiling', pick(state.idx.ceiling), 3),
+    w && applyTexture('wall',    w, 4),
+    f && applyTexture('floor',   f, 6),
+    c && applyTexture('ceiling', c, 3),
   ]);
 }
 
@@ -74,34 +85,48 @@ async function loadManifest() {
     const r = await fetch(`./${state.folder}/manifest.json`, { cache: 'no-cache' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const j = await r.json();
-    state.textures = j.items || j.textures || [];   // manifest schema: items (new) / textures (legacy)
     state.folder = j.folder || state.folder;
+    // Nouveau schema : { mur: [...], plafond: [...], sol: [...] }
+    // Ancien schema : { items: [...] } (tout en vrac, réutilisé pour les 3 surfaces)
+    if (j.mur || j.plafond || j.sol) {
+      state.texturesBySurface.wall    = j.mur     || [];
+      state.texturesBySurface.ceiling = j.plafond || [];
+      state.texturesBySurface.floor   = j.sol     || [];
+    } else {
+      const flat = j.items || j.textures || [];
+      state.texturesBySurface.wall    = flat.slice();
+      state.texturesBySurface.ceiling = flat.slice();
+      state.texturesBySurface.floor   = flat.slice();
+    }
   } catch (e) {
     console.warn('Manifest texturegif introuvable —', e.message);
-    state.textures = [];
+    state.texturesBySurface = { wall: [], floor: [], ceiling: [] };
   }
 }
 
-function loadTex(filename) {
-  if (state.loadedTex.has(filename)) return Promise.resolve(state.loadedTex.get(filename));
+function loadTex(surface, filename) {
+  const key = `${surface}::${filename}`;
+  if (state.loadedTex.has(key)) return Promise.resolve(state.loadedTex.get(key));
+  const sub = SUBFOLDER[surface];
+  const url = `./${state.folder}/${sub}/${encodeURIComponent(filename)}`;
   return new Promise((resolve) => {
     loader.load(
-      `./${state.folder}/${filename}`,
+      url,
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         tex.anisotropy = 8;
-        state.loadedTex.set(filename, tex);
+        state.loadedTex.set(key, tex);
         resolve(tex);
       },
       undefined,
-      (err) => { console.warn('Texture load fail:', filename, err); resolve(null); }
+      (err) => { console.warn('Texture load fail:', url, err); resolve(null); }
     );
   });
 }
 
 async function applyTexture(surface, filename, repeat = 4) {
-  const tex = await loadTex(filename);
+  const tex = await loadTex(surface, filename);
   if (!tex) return;
   const clone = tex.clone();
   clone.wrapS = clone.wrapT = THREE.RepeatWrapping;
@@ -123,18 +148,20 @@ function resetTexture(surface) {
 }
 
 function cycleTexture(surface) {
-  if (!state.textures.length) return;
-  state.idx[surface] = (state.idx[surface] + 1) % state.textures.length;
-  const f = state.textures[state.idx[surface]];
+  const pool = state.texturesBySurface[surface];
+  if (!pool.length) return;
+  state.idx[surface] = (state.idx[surface] + 1) % pool.length;
+  const f = pool[state.idx[surface]];
   applyTexture(surface, f);
   setBadge(surface, f);
 }
 
 function randomizeAll() {
-  if (!state.textures.length) return;
   for (const s of ['wall', 'floor', 'ceiling']) {
-    state.idx[s] = Math.floor(Math.random() * state.textures.length);
-    const f = state.textures[state.idx[s]];
+    const pool = state.texturesBySurface[s];
+    if (!pool.length) continue;
+    state.idx[s] = Math.floor(Math.random() * pool.length);
+    const f = pool[state.idx[s]];
     applyTexture(s, f);
     setBadge(s, f);
   }
@@ -349,12 +376,15 @@ function updateStats() {
   if (!el) return;
   const frames = paintingGroups.length;
   const m = Music.getSnapshot();
+  const tw = state.texturesBySurface.wall.length;
+  const tc = state.texturesBySurface.ceiling.length;
+  const tf = state.texturesBySurface.floor.length;
   el.innerHTML = `
     <div>📁 Dossier images : <b>${state.imageFolder}</b></div>
     <div>🖼️ Tableaux affichés : <b>${frames}</b></div>
     <div>🎵 Musiques : <b>${m.count}</b></div>
     <div>🎞️ Vidéos : <b>0</b></div>
-    <div>💾 Textures : <b>${state.textures.length}</b></div>
+    <div>💾 Textures mur/plafond/sol : <b>${tw}</b>/<b>${tc}</b>/<b>${tf}</b></div>
     <div>🖼️ Cadres rendus : <b>${frames * 2}</b></div>
   `;
 }

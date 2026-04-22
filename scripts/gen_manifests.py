@@ -22,9 +22,24 @@ def gen(folder, patterns):
         json.dump({'folder': folder, 'items': out}, fh, ensure_ascii=False, indent=2)
     print(f'  {folder:<12} -> {len(out)} fichier(s)')
 
+def gen_textures():
+    """Scan texturegif/{mur,plafond,sol} and write texturegif/manifest.json."""
+    TEX_EXT = ('*.gif', '*.jpg', '*.jpeg', '*.png', '*.webp')
+    out = {'folder': 'texturegif'}
+    for sub in ('mur', 'plafond', 'sol'):
+        files = []
+        for pat in TEX_EXT:
+            for f in glob.glob(os.path.join(ROOT, 'texturegif', sub, pat)):
+                files.append(os.path.basename(f))
+        out[sub] = sorted(set(files), key=str.lower)
+        print(f'  texturegif/{sub:<7} -> {len(out[sub])} fichier(s)')
+    path = os.path.join(ROOT, 'texturegif', 'manifest.json')
+    with open(path, 'w', encoding='utf-8') as fh:
+        json.dump(out, fh, ensure_ascii=False, indent=2)
+
 if __name__ == '__main__':
     print('Generation des manifests...')
-    gen('images',     ['*.jpg', '*.jpeg', '*.png', '*.webp'])
-    gen('musiques',   ['*.mp3', '*.ogg', '*.wav', '*.m4a', '*.flac'])
-    gen('texturegif', ['*.gif', '*.png', '*.jpg'])
+    gen('images',   ['*.jpg', '*.jpeg', '*.png', '*.webp'])
+    gen('musiques', ['*.mp3', '*.ogg', '*.wav', '*.m4a', '*.flac'])
+    gen_textures()
     print('OK.')
