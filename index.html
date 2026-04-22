@@ -112,6 +112,53 @@
     padding: 10px 12px; line-height: 1.8; font-size: 12px; color: #c9bfa9;
   }
   .admin-stats b { color: #e6ddd1; }
+
+  /* ==================== PAINTING MODAL (lightbox) ==================== */
+  #painting-modal {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(6,5,4,0.92); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 40px; cursor: zoom-out;
+  }
+  #painting-modal.open { display: flex; }
+  #painting-modal .frame {
+    max-width: 86vw; max-height: 88vh;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: default;
+  }
+  #painting-modal img {
+    max-width: 86vw; max-height: 72vh; object-fit: contain;
+    border: 14px solid #1a130a; box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+    background: #0a0908;
+  }
+  #painting-modal .card {
+    margin-top: 22px; max-width: 720px; text-align: center;
+    color: #e6ddd1; font-family: 'Georgia', serif;
+  }
+  #painting-modal .meta {
+    color: #d7b274; font-size: 12px; letter-spacing: .3em;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  #painting-modal .title {
+    font-size: 26px; font-style: italic; color: #e6ddd1; margin-bottom: 10px;
+  }
+  #painting-modal .desc {
+    font-size: 14px; line-height: 1.6; color: #c9bfa9;
+  }
+  #painting-modal .sign {
+    margin-top: 14px; font-size: 12px; color: #8a7f6a; letter-spacing: .15em;
+  }
+  #painting-modal .close {
+    position: absolute; top: 18px; right: 22px;
+    background: rgba(20,17,14,0.8); border: 1px solid #3a342c; border-radius: 50%;
+    width: 42px; height: 42px; color: #d7b274; font-size: 22px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #painting-modal .close:hover { background: rgba(60,50,38,0.95); }
+  #painting-modal .hint {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    color: #8a7f6a; font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+  }
 </style>
 </head>
 <body>
@@ -152,6 +199,20 @@
 
 <button id="admin-toggle" title="Administration (F1)">⚙</button>
 <aside id="admin-panel"></aside>
+
+<div id="painting-modal">
+  <button class="close" id="modal-close" title="Fermer (Esc)">✕</button>
+  <div class="frame">
+    <img id="modal-img" alt="" />
+    <div class="card">
+      <div class="meta" id="modal-meta"></div>
+      <div class="title" id="modal-title"></div>
+      <div class="desc" id="modal-desc"></div>
+      <div class="sign">Maëlle Corvain</div>
+    </div>
+  </div>
+  <div class="hint">Échap pour fermer</div>
+</div>
 
 <script type="importmap">
 {

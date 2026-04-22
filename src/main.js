@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { buildMuseum } from './museum.js';
-import { placePaintings, updateCartels } from './paintings.js';
+import { placePaintings, updateCartels, paintingMeshes } from './paintings.js';
 import { Controls } from './controls.js';
 import { initAdmin, updateAdmin } from './admin.js';
 
@@ -62,6 +62,62 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'F1') { e.preventDefault(); adminPanel.classList.toggle('open'); }
 });
 
+// ---------- Painting click → modal ----------
+const paintingModal  = document.getElementById('painting-modal');
+const modalImg       = document.getElementById('modal-img');
+const modalMeta      = document.getElementById('modal-meta');
+const modalTitle     = document.getElementById('modal-title');
+const modalDesc      = document.getElementById('modal-desc');
+const modalClose     = document.getElementById('modal-close');
+const raycaster      = new THREE.Raycaster();
+const centerNdc      = new THREE.Vector2(0, 0);
+let modalOpen        = false;
+
+function openPainting(pm) {
+  modalImg.src       = pm.url;
+  modalMeta.textContent  = `${pm.entry.num} · ${pm.entry.year} · ${pm.entry.room.toUpperCase()}`;
+  modalTitle.textContent = pm.entry.title;
+  modalDesc.textContent  = pm.entry.note;
+  paintingModal.classList.add('open');
+  modalOpen = true;
+  if (document.pointerLockElement) document.exitPointerLock();
+}
+function closePainting() {
+  paintingModal.classList.remove('open');
+  modalOpen = false;
+}
+
+// Click on painting (only while pointer locked — crosshair in centre)
+renderer.domElement.addEventListener('click', () => {
+  if (modalOpen) return;
+  if (!document.pointerLockElement) return; // first click just locks pointer
+  raycaster.setFromCamera(centerNdc, camera);
+  const meshes = paintingMeshes.map(p => p.mesh);
+  const hits = raycaster.intersectObjects(meshes, false);
+  if (hits.length) {
+    const h = hits[0];
+    if (h.distance < 5.0) {
+      const pm = paintingMeshes.find(p => p.mesh === h.object);
+      if (pm) openPainting(pm);
+    }
+  }
+});
+
+// Esc closes modal (capture phase so Controls.js Esc handler ignores)
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && modalOpen) {
+    e.stopPropagation();
+    e.preventDefault();
+    closePainting();
+  }
+}, true);
+
+modalClose.addEventListener('click', closePainting);
+paintingModal.addEventListener('click', (e) => {
+  // click on dark backdrop (not on frame content) closes
+  if (e.target === paintingModal) closePainting();
+});
+
 // ---------- Resize ----------
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -85,7 +141,7 @@ startBtn.addEventListener('click', () => {
 const clock = new THREE.Clock();
 function frame() {
   const dt = Math.min(0.05, clock.getDelta());
-  controls.update(dt);
+  if (!modalOpen) controls.update(dt);
   updateAdmin(dt);
 
   // Room label from current position

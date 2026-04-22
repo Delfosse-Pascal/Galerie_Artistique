@@ -12,7 +12,7 @@ const CATALOG = [
   { num: 'VII',  title: 'Ferme abandonnée à Logoù',         year: '1876', room: 'r2', mount: { wall: 'E', x: 20, y: 1.8, scale: 1.1 }, note: "Motif récurrent de l'architecture vernaculaire en ruine." },
   { num: 'VIII', title: 'Le silence des halliers',          year: '1878', room: 'r2', mount: { wall: 'E', x: 23, y: 1.8, scale: 1.1 }, note: "Exposée au Salon des Refusés, 1879." },
   { num: 'IX',   title: 'Demeure des Morgane',              year: '1881', room: 'r3', mount: { wall: 'W', x: 30, y: 1.65, scale: 0.95 }, note: "Entrée dans la période dite des Hantises." },
-  { num: 'X',    title: 'Appel sur la lande',               year: '1883', room: 'r3', mount: { wall: 'W', x: 33.5, y: 1.65, scale: 0.95 }, note: "Silhouette humaine ambiguë — amante ou spectre ?" },
+  { num: 'X',    title: 'Appel sur la lande',               year: '1883', room: 'r3', mount: { wall: 'W', x: 34.8, y: 1.65, scale: 0.95 }, note: "Silhouette humaine ambiguë — amante ou spectre ?" },
   { num: 'XI',   title: 'Veille au seuil',                  year: '1885', room: 'r3', mount: { wall: 'E', x: 30, y: 1.65, scale: 0.95 }, note: "Format intime, peinte à la bougie." },
   { num: 'XII',  title: 'Ce qui reste d\'un jardin',        year: '1887', room: 'r3', mount: { wall: 'E', x: 35, y: 1.65, scale: 0.95 }, note: "Don du docteur Lestrel, 1921." },
   { num: 'XIII', title: 'Le grand vestibule du monde',      year: '1890', room: 'r4', mount: { wall: 'W', x: 43, y: 3.0, scale: 2.2 }, note: "Œuvre monumentale. 3,4 × 4,6 m." },
@@ -29,6 +29,9 @@ export const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x1a130a, r
 
 // Painting root groups — admin rotates them for auto-rotation preview
 export const paintingGroups = [];
+
+// Painting canvas meshes — used by main.js for click-to-open modal
+export const paintingMeshes = [];
 
 // Frame style presets — admin dropdown applies one of these
 export const FRAME_STYLES = {
@@ -95,7 +98,9 @@ export async function placePaintings(scene, rooms) {
         );
         canvas.position.z = 0.005;
         canvas.receiveShadow = true;
+        canvas.userData.painting = true;
         group.add(canvas);
+        paintingMeshes.push({ mesh: canvas, entry, url });
 
         // Spotlight above painting
         const spot = new THREE.SpotLight(0xfff1d4, 2.2, 6, Math.PI*0.32, 0.4, 1.7);
