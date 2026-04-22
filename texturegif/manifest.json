@@ -1,0 +1,16 @@
+{
+  "folder": "texturegif",
+  "textures": [
+    "texture01.gif","texture02.gif","texture03.gif","texture05.gif","texture06.gif",
+    "texture08.gif","texture09.gif","texture10.gif","texture11.gif","texture12.gif",
+    "texture13.gif","texture15.gif","texture16.gif","texture17.gif","texture19.gif",
+    "texture20.gif","texture21.gif","texture22.gif","texture23.gif","texture24.gif",
+    "texture27.gif","texture28.gif","texture29.gif","texture30.gif","texture31.gif",
+    "texture32.gif","texture33.gif","texture34.gif","texture35.gif","texture36.gif",
+    "texture37.gif","texture38.gif","texture40.gif","texture41.gif","texture42.gif",
+    "texture43.gif","texture44.gif","texture46.gif","texture48.gif","texture49.gif",
+    "texture50.gif","texture51.gif","texture52.gif","texture53.gif","texture57.gif",
+    "texture58.gif","texture59.gif","texture60.gif","texture62.gif","texture63.gif",
+    "texture64.gif","texture65.gif","texture68.gif"
+  ]
+}

@@ -229,6 +229,9 @@ export function buildMuseum(scene) {
       floor:   new THREE.MeshStandardMaterial({ color: p.floor,   roughness: 0.75, metalness: 0 }),
       ceiling: new THREE.MeshStandardMaterial({ color: p.ceiling, roughness: 0.95, metalness: 0 }),
     };
+    rm[k].wall.userData    = { surface: 'wall',    room: k, baseColor: p.wall };
+    rm[k].floor.userData   = { surface: 'floor',   room: k, baseColor: p.floor };
+    rm[k].ceiling.userData = { surface: 'ceiling', room: k, baseColor: p.ceiling };
   }
 
   // ================== FLOORS & CEILINGS ==================
@@ -418,7 +421,7 @@ export function buildMuseum(scene) {
     { name: 'IV. Derniers Lieux (1889–1897)', ...rooms.r4 },
   ];
 
-  return { rooms, colliders: aabbs, roomLabels };
+  return { rooms, colliders: aabbs, roomLabels, materials: rm };
 }
 
 // ---------- Decorative builders ----------

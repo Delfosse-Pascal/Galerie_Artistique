@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildMuseum } from './museum.js';
 import { placePaintings, updateCartels } from './paintings.js';
 import { Controls } from './controls.js';
+import { initAdmin, updateAdmin } from './admin.js';
 
 const app = document.getElementById('app');
 const startBtn = document.getElementById('start-btn');
@@ -37,13 +38,29 @@ const keyAmbient = new THREE.AmbientLight(0xffffff, 0.75);
 scene.add(keyAmbient);
 
 // ---------- Museum architecture ----------
-const { rooms, colliders, roomLabels } = buildMuseum(scene);
+const { rooms, colliders, roomLabels, materials } = buildMuseum(scene);
 
 // ---------- Paintings ----------
 const paintingsReady = placePaintings(scene, rooms);
 
 // ---------- Controls ----------
 const controls = new Controls(camera, renderer.domElement, colliders);
+
+// ---------- Admin panel ----------
+paintingsReady.then(() =>
+  initAdmin({ scene, renderer, camera, rooms, materials, hemi, ambient: keyAmbient })
+);
+
+const adminToggle = document.getElementById('admin-toggle');
+const adminPanel  = document.getElementById('admin-panel');
+adminToggle?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  adminPanel.classList.toggle('open');
+  if (document.pointerLockElement) document.exitPointerLock();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F1') { e.preventDefault(); adminPanel.classList.toggle('open'); }
+});
 
 // ---------- Resize ----------
 window.addEventListener('resize', () => {
@@ -69,6 +86,7 @@ const clock = new THREE.Clock();
 function frame() {
   const dt = Math.min(0.05, clock.getDelta());
   controls.update(dt);
+  updateAdmin(dt);
 
   // Room label from current position
   const p = controls.position;

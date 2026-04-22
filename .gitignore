@@ -13,3 +13,6 @@ videos/*
 !videos/.gitkeep
 musiques/*
 !musiques/.gitkeep
+texturegif/*
+!texturegif/.gitkeep
+!texturegif/manifest.json

@@ -24,10 +24,32 @@ const CATALOG = [
 const WALL_OFFSET = 0.17; // distance from wall plane to painting face (wall half-thickness + 0.02)
 const loadedCartels = [];
 
+// Shared frame material — mutable so admin can swap style live
+export const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x1a130a, roughness: 0.55, metalness: 0.05 });
+
+// Painting root groups — admin rotates them for auto-rotation preview
+export const paintingGroups = [];
+
+// Frame style presets — admin dropdown applies one of these
+export const FRAME_STYLES = {
+  or:        { color: 0xd4af37, metalness: 0.85, roughness: 0.25 },
+  argent:    { color: 0xc0c0c0, metalness: 0.85, roughness: 0.22 },
+  bronze:    { color: 0x8c5a2b, metalness: 0.65, roughness: 0.42 },
+  boisfonce: { color: 0x1a130a, metalness: 0.05, roughness: 0.55 },
+  noir:      { color: 0x0a0a0a, metalness: 0.10, roughness: 0.85 },
+  blanc:     { color: 0xf0ece2, metalness: 0.00, roughness: 0.70 },
+};
+export function setFrameStyle(name) {
+  const s = FRAME_STYLES[name];
+  if (!s) return;
+  frameMaterial.color.setHex(s.color);
+  frameMaterial.metalness = s.metalness;
+  frameMaterial.roughness = s.roughness;
+  frameMaterial.needsUpdate = true;
+}
+
 export async function placePaintings(scene, rooms) {
   const loader = new THREE.TextureLoader();
-
-  const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a130a, roughness: 0.55, metalness: 0.05 });
 
   const promises = [];
 
@@ -51,14 +73,16 @@ export async function placePaintings(scene, rooms) {
         const group = new THREE.Group();
         group.position.copy(pos);
         group.rotation.y = rotY;
+        group.userData = { baseRotY: rotY };
         scene.add(group);
+        paintingGroups.push(group);
 
         // Frame
         const frameDepth = 0.05;
         const frameBorder = 0.06;
         const frame = new THREE.Mesh(
           new THREE.BoxGeometry(w + frameBorder*2, h + frameBorder*2, frameDepth),
-          frameMat
+          frameMaterial
         );
         frame.position.z = -frameDepth/2;
         frame.castShadow = true;
