@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Musée Maëlle Corvain — Les Lieux Oubliés</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0908; color: #e6ddd1; font-family: 'Georgia', 'Cormorant Garamond', serif; }
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  #hud {
+    position: fixed; left: 16px; bottom: 16px;
+    background: rgba(10,9,8,0.72); border: 1px solid #3a342c;
+    padding: 10px 14px; font-size: 13px; line-height: 1.5;
+    max-width: 360px; pointer-events: none; backdrop-filter: blur(4px);
+  }
+  #hud b { color: #d7b274; letter-spacing: .05em; }
+  #room-name {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    font-size: 14px; letter-spacing: .25em; text-transform: uppercase;
+    background: rgba(10,9,8,0.55); padding: 6px 18px; border: 1px solid #3a342c;
+    pointer-events: none;
+  }
+  #start {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background: rgba(10,9,8,0.92);
+    text-align: center; padding: 24px; z-index: 5;
+  }
+  #start h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: .15em; margin-bottom: 6px; color: #e6ddd1; }
+  #start h2 { font-size: 14px; letter-spacing: .4em; text-transform: uppercase; color: #a89a82; margin-bottom: 28px; }
+  #start p { max-width: 620px; line-height: 1.6; margin-bottom: 14px; color: #c9bfa9; }
+  #start .key { display: inline-block; border: 1px solid #5b5042; padding: 2px 8px; margin: 0 2px; font-family: monospace; color: #d7b274; }
+  #start button {
+    margin-top: 24px; padding: 12px 28px; font-size: 14px; letter-spacing: .3em;
+    text-transform: uppercase; background: #3a342c; color: #e6ddd1;
+    border: 1px solid #6d5e47; cursor: pointer; font-family: inherit;
+  }
+  #start button:hover { background: #4d4433; }
+  #loading { color: #a89a82; font-size: 12px; margin-top: 20px; letter-spacing: .2em; }
+  #cartel-overlay {
+    position: fixed; right: 16px; bottom: 16px; max-width: 320px;
+    background: rgba(10,9,8,0.82); border: 1px solid #3a342c; padding: 12px 16px;
+    font-size: 13px; line-height: 1.5; display: none; pointer-events: none;
+  }
+  #cartel-overlay .title { color: #d7b274; font-style: italic; font-size: 15px; margin-bottom: 4px; }
+  #cartel-overlay .meta { color: #a89a82; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="start">
+  <h2>Musée Maëlle Corvain</h2>
+  <h1>Les Lieux Oubliés</h1>
+  <p>Un parcours à travers l'œuvre de Maëlle Corvain (1842–1897), peintre symboliste des ruines, des landes et des demeures abandonnées.</p>
+  <p>
+    <span class="key">Clic</span> verrouille la souris &nbsp;·&nbsp;
+    <span class="key">W/S</span> ou <span class="key">↑/↓</span> avancer / reculer &nbsp;·&nbsp;
+    <span class="key">A/D</span> ou <span class="key">←/→</span> déplacement latéral
+  </p>
+  <p>
+    <span class="key">Souris X</span> tourner &nbsp;·&nbsp;
+    <span class="key">Souris Y</span> regarder haut/bas &nbsp;·&nbsp;
+    <span class="key">Shift + Souris Y</span> avancer/reculer &nbsp;·&nbsp;
+    <span class="key">Molette</span> zoom
+  </p>
+  <p style="color:#8a7f6a;font-size:12px;margin-top:18px">Collisions actives — aucun passage à travers la géométrie.</p>
+  <button id="start-btn" disabled>Chargement...</button>
+  <div id="loading">Préparation des salles</div>
+</div>
+
+<div id="room-name"></div>
+
+<div id="hud">
+  <div><b>Musée Corvain</b> — Les Lieux Oubliés</div>
+  <div style="color:#a89a82;font-size:11px;margin-top:4px">Approchez une œuvre pour lire le cartel.</div>
+</div>
+
+<div id="cartel-overlay">
+  <div class="meta" id="cartel-num"></div>
+  <div class="title" id="cartel-title"></div>
+  <div id="cartel-desc"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

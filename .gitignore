@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# tiroirs médias — gardé localement, pas en dépôt
+images/*
+!images/.gitkeep
+videos/*
+!videos/.gitkeep
+musiques/*
+!musiques/.gitkeep
