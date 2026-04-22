@@ -1,27 +1,27 @@
 import * as THREE from 'three';
 
 // ----------------------------------------------------------------------------
-// First-person controls — NO pointer-lock
+// First-person controls — drag-to-look
 //
-// Cursor stays visible at all times (custom red crosshair via CSS).
-// Camera rotates when the mouse approaches the screen edges (edge-pan),
-// so you aim by moving the cursor. A central dead-zone keeps the view still
-// when the cursor is near screen centre.
+// Pas de pointer-lock, pas d'edge-pan (nausée). La caméra tourne uniquement
+// quand on maintient le clic gauche et qu'on déplace la souris.
 //
-//   - W/S  ou ↑/↓ : avancer / reculer
-//   - A/D  ou ←/→ : pas latéral
-//   - souris bords : tourner / regarder haut-bas
+//   - W/S ou ↑/↓ : avancer / reculer
+//   - A/D ou ←/→ : pas latéral
+//   - Shift (maintenu) : courir (×2)
+//   - clic gauche + glisser : tourner (yaw)
 //   - molette : zoom (FOV)
-//   - clic sur tableau : ouvrir la fiche
+//   - clic sans glisser : ouvrir un tableau
+//
+// Pitch (haut/bas) hard-locké à 0 pour éviter le mal de mer.
 // ----------------------------------------------------------------------------
 
 const PLAYER_HEIGHT = 1.65;
 const PLAYER_RADIUS = 0.35;
 const WALK_SPEED    = 2.4;
-const YAW_SPEED     = 2.1;   // rad/s at screen edge
-const PITCH_SPEED   = 1.3;
-const DEADZONE      = 0.22;  // fraction of half-screen where no rotation occurs
-const PITCH_LIMIT   = 1.25;
+const RUN_MULT      = 2.0;           // Shift held → sprint multiplier
+const YAW_SENS      = 0.0035;        // rad per pixel of horizontal drag
+const DRAG_THRESHOLD = 4;            // px — beyond this, mouseup is drag not click
 const FOV_MIN       = 12;
 const FOV_MAX       = 75;
 const ZOOM_STEP     = 2.5;
@@ -35,7 +35,11 @@ export class Controls {
     this.yaw = 0;
     this.pitch = 0;
     this.keys = Object.create(null);
-    this.mouseNDC = new THREE.Vector2(0, 0);  // x right, y down (screen-normalised, −1..1)
+
+    this.dragging   = false;
+    this.dragMoved  = false;  // consumed by main.js click handler to skip modal-open after a drag
+    this.lastX      = 0;
+    this.dragAccum  = 0;
 
     this.position = new THREE.Vector3(0, PLAYER_HEIGHT, -1.5);
     this.fov = camera.fov;
@@ -45,10 +49,33 @@ export class Controls {
   }
 
   #bind() {
-    window.addEventListener('mousemove', (e) => {
-      this.mouseNDC.x = (e.clientX / window.innerWidth)  * 2 - 1;
-      this.mouseNDC.y = (e.clientY / window.innerHeight) * 2 - 1;
+    // Start drag only on the canvas — clicks on admin panel / modal don't reach here
+    this.dom.addEventListener('mousedown', (e) => {
+      if (e.button !== 0 || !this.enabled) return;
+      this.dragging = true;
+      this.dragMoved = false;
+      this.dragAccum = 0;
+      this.lastX = e.clientX;
+      this.dom.classList.add('dragging');
     });
+
+    // Move/up on window so releasing outside the canvas still ends the drag cleanly
+    window.addEventListener('mousemove', (e) => {
+      if (!this.dragging) return;
+      const dx = e.clientX - this.lastX;
+      this.lastX = e.clientX;
+      this.yaw -= dx * YAW_SENS;
+      this.dragAccum += Math.abs(dx);
+      if (this.dragAccum > DRAG_THRESHOLD) this.dragMoved = true;
+    });
+
+    const endDrag = () => {
+      if (!this.dragging) return;
+      this.dragging = false;
+      this.dom.classList.remove('dragging');
+    };
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('blur', () => { endDrag(); this.keys = Object.create(null); });
 
     window.addEventListener('wheel', (e) => {
       const d = Math.sign(e.deltaY) * ZOOM_STEP;
@@ -59,7 +86,6 @@ export class Controls {
 
     document.addEventListener('keydown', (e) => { this.keys[e.code] = true; });
     document.addEventListener('keyup',   (e) => { this.keys[e.code] = false; });
-    window.addEventListener('blur', () => { this.keys = Object.create(null); });
   }
 
   // AABB vs. sphere (circle in XZ) — true if this position collides
@@ -79,15 +105,13 @@ export class Controls {
   update(dt) {
     if (!this.enabled) return;
 
-    // ---- Edge-pan rotation (yaw seulement — pitch figé pour éviter mal de mer) ----
-    const nx = this.mouseNDC.x;
-    if (Math.abs(nx) > DEADZONE) {
-      const eff = (nx - Math.sign(nx) * DEADZONE) / (1 - DEADZONE);
-      this.yaw -= eff * YAW_SPEED * dt;
-    }
+    // Pitch stays flat (no seasickness)
     this.pitch = 0;
 
-    // ---- Movement (WASD + arrows) ----
+    // ---- Movement (WASD + arrows, Shift = sprint) ----
+    const running = !!(this.keys['ShiftLeft'] || this.keys['ShiftRight']);
+    const speed = WALK_SPEED * (running ? RUN_MULT : 1);
+
     const fx = -Math.sin(this.yaw);
     const fz = -Math.cos(this.yaw);
     const rx = -fz;
@@ -103,7 +127,7 @@ export class Controls {
     let dz = fz * moveF + rz * moveR;
     const mag = Math.hypot(dx, dz);
     if (mag > 0) {
-      const step = WALK_SPEED * dt * Math.min(1, mag);
+      const step = speed * dt * Math.min(1, mag);
       dx = (dx / mag) * step;
       dz = (dz / mag) * step;
       const tx = this.position.x + dx;

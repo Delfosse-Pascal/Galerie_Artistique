@@ -64,7 +64,7 @@ function toggleAdmin() {
 }
 adminToggle?.addEventListener('click', (e) => { e.stopPropagation(); toggleAdmin(); });
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'F1') { e.preventDefault(); toggleAdmin(); }
+  if (e.key === 'F1' || e.key === 'F10') { e.preventDefault(); toggleAdmin(); }
 });
 // Admin panel may close itself (close button inside) — re-enable controls + reset toggle
 window.addEventListener('admin:closed', () => {
@@ -101,6 +101,7 @@ function closePainting() {
 // Walls/frames/benches occlude, so distant paintings only open with clear line of sight.
 renderer.domElement.addEventListener('click', (e) => {
   if (modalOpen) return;
+  if (controls.dragMoved) return;  // drag-to-rotate consumed this click
   const rect = renderer.domElement.getBoundingClientRect();
   const ndc = new THREE.Vector2(
      ((e.clientX - rect.left) / rect.width)  * 2 - 1,

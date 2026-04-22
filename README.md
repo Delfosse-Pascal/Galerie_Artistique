@@ -9,9 +9,10 @@ Lieux* — plus un atelier reconstitué, une salle immersive, et jusqu'à
 Rendu : Three.js (WebGL2), aucune dépendance à installer, importmap CDN.
 
 > **Interaction** — curseur rouge en viseur toujours visible, rotation
-> horizontale par edge-pan (souris près des bords → la caméra tourne). La
-> caméra verticale est figée pour éviter le mal de mer. Cliquer sur un
-> tableau ouvre une fiche plein écran. Panneau administration `F1`.
+> horizontale par **clic gauche + glisser** (drag-to-look, pas d'effet lisse
+> qui donne la nausée). **Shift** maintenu = courir. La caméra verticale est
+> figée pour éviter le mal de mer. Cliquer sans glisser sur un tableau ouvre
+> une fiche plein écran. Panneau administration `F1` ou `F10`.
 
 ## Lancer le musée
 
@@ -46,17 +47,18 @@ Puis ouvrir `http://localhost:8080` dans un navigateur récent.
 |---|---|
 | Avancer / reculer | `W` / `S` ou `↑` / `↓` |
 | Pas latéral | `A` / `D` ou `←` / `→` |
-| Tourner (yaw) | Souris vers les bords gauche / droit |
+| Courir | `Shift` (maintenu) |
+| Tourner (yaw) | Clic gauche maintenu + glisser |
 | Zoom FOV (12°–75°) | Molette |
-| Ouvrir un tableau | Clic (viser le tableau) |
+| Ouvrir un tableau | Clic gauche simple (sans glisser) |
 | Fermer la fiche | `Esc` |
-| Panneau administration | `F1` ou icône ⚙ haut-droite |
+| Panneau administration | `F1` / `F10` ou icône ⚙ haut-droite |
 | Fermer l'administration | ✕ dans le panneau ou `Esc` |
 
 ## Contraintes respectées
 
 - **Collisions permanentes** : AABB par mur, contrôle axe-par-axe → glissement le long des surfaces, aucun passage à travers la géométrie.
-- **Hauteur humaine fixe** (1,65 m), vitesse modérée (2,4 m/s), pas de vol libre ni de clipping.
+- **Hauteur humaine fixe** (1,65 m), marche 2,4 m/s, course 4,8 m/s (`Shift` maintenu), pas de vol libre ni de clipping.
 - **Caméra verticale figée** — `pitch = 0` chaque frame, plus de regard haut/bas pour éviter le mal de mer.
 - **Circulation logique** : chaque salle reliée par une porte réelle (1,6 m × 2,4 m), aucune zone morte.
 - **Accrochage muséographique** : toiles collées à la paroi (offset 2 cm), hauteur de regard réaliste, cartels latéraux + overlay de contexte à l'approche.
@@ -66,7 +68,7 @@ Puis ouvrir `http://localhost:8080` dans un navigateur récent.
 
 ## Panneau administration
 
-Ouvrir avec `F1` ou l'icône ⚙. Actions disponibles :
+Ouvrir avec `F1` / `F10` ou l'icône ⚙. Actions disponibles :
 
 | Section | Contrôle | Effet |
 |---|---|---|
@@ -138,7 +140,7 @@ Galerie_Artistique/
 │   ├── main.js            # boucle de rendu, scène, tone-mapping, wiring
 │   ├── museum.js          # architecture : salles, couloirs, éclairage, atelier, salle immersive
 │   ├── paintings.js       # catalogue + slots extras, chargement via manifest, cartels
-│   ├── controls.js        # caméra FPS edge-pan + collisions AABB
+│   ├── controls.js        # caméra FPS drag-to-look + sprint Shift + collisions AABB
 │   ├── music.js           # lecteur audio, shuffle/loop/volume
 │   └── admin.js           # panneau admin (textures, cadres, ambiance, musique, stats)
 ├── images/                # tiroir tableaux (non versionné, sauf .gitkeep + manifest.json)
