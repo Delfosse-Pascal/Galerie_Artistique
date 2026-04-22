@@ -1,0 +1,56 @@
+https://github.com/Delfosse-Pascal/Galerie_Artistique
+C:\Users\Pascal509\Desktop\Galerie_Artistique
+git commit et push sans les image sans les videos sans les musiques mais laisse les tiroirs
+/compact
+
+Tu peux vérifier si c'est 2 là sont bien le même repo stp
+
+
+
+Concept architectural et artistique
+des images de test sont dans  
+
+Crée un musée dédié à un peintre fictif ou réel, avec une identité forte et reconnaissable. L’architecture doit refléter son style artistique :
+Les tableaux seront dans le tiroir C:\Users\Pascal509\Desktop\Galerie_Artistique\images
+
+formes, matériaux et lumière inspirés de ses œuvres
+alternance de grandes salles ouvertes et d’espaces plus intimistes
+circulation logique entre les salles (aucun espace inaccessible ou incohérent)
+intégration d’éléments emblématiques (atelier reconstitué, salle immersive, œuvres monumentales)
+
+Le musée doit paraître crédible, visitable et physiquement réalisable.
+
+2. Scénographie et mise en valeur des œuvres
+
+Organise les œuvres avec rigueur muséographique :
+
+accrochage à hauteur réaliste, espacements cohérents
+éclairage directionnel précis (spots, lumière naturelle contrôlée)
+progression narrative (chronologique ou thématique)
+diversité des formats (toiles, fresques, installations)
+
+Ajoute des éléments de contexte : cartels, bancs, circulation fluide du public.
+Aucune œuvre ne doit flotter ou être mal alignée : tolérance zéro sur ces erreurs.
+
+3. Caméra et déplacement (contrainte critique)
+
+La caméra doit respecter des règles strictes et non négociables :
+
+collision activée en permanence
+interdiction absolue de traverser les murs, plafonds, sols ou objets
+déplacements réalistes (hauteur humaine, vitesse modérée)
+transitions naturelles entre les pièces (portes, couloirs, ouvertures réelles uniquement)
+pas de mouvements impossibles (pas de vol libre, pas de clipping, pas de passage à travers géométrie)
+
+Si une trajectoire n’est pas physiquement possible, elle doit être refusée ou corrigée.
+
+4. Ambiance, rendu et réalisme
+
+Crée une atmosphère immersive :
+
+lumière réaliste (HDR, ombres cohérentes, pas de sur-exposition)
+matériaux crédibles (béton, bois, verre, métal avec textures précises)
+acoustique suggérée (silence feutré, écho léger)
+présence humaine optionnelle mais crédible (visiteurs discrets, proportions justes)
+
+Le rendu doit éviter tout effet artificiel : pas de glitch, pas d’éléments flottants, pas de déformations visuelles.
