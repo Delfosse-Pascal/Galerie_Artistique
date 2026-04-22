@@ -21,6 +21,30 @@ const CATALOG = [
   { num: 'XVI',  title: 'Les lieux oubliés',                year: '1897', room: 'r4', mount: { wall: 'N', x:  3.8, y: 3.0, scale: 1.9 }, note: "Inachevée. Trouvée sur son chevalet." },
 ];
 
+// Emplacements supplémentaires pour les images au-delà des 16 œuvres canoniques.
+// Positions choisies pour ne pas entrer en collision avec les tableaux existants.
+// (wall='E'/'W' : m.x = coord Z ; wall='N'/'S' : m.x = coord X)
+const EXTRA_SLOTS = [
+  // R1 — murs E/W solides (8 m de long, hauteur 5 m)
+  { room:'r1',        mount:{ wall:'E', x:  8,   y:1.8,  scale:0.9 } },
+  { room:'r1',        mount:{ wall:'E', x: 10.5, y:1.8,  scale:0.9 } },
+  { room:'r1',        mount:{ wall:'E', x: 13,   y:1.8,  scale:0.9 } },
+  { room:'r1',        mount:{ wall:'W', x:  8,   y:1.8,  scale:0.9 } },
+  { room:'r1',        mount:{ wall:'W', x: 10.5, y:1.8,  scale:0.9 } },
+  { room:'r1',        mount:{ wall:'W', x: 13,   y:1.8,  scale:0.9 } },
+  // R2 — places restantes entre les 4 tableaux canoniques
+  { room:'r2',        mount:{ wall:'E', x: 18,   y:1.8,  scale:0.9 } },
+  { room:'r2',        mount:{ wall:'W', x: 24,   y:1.8,  scale:0.9 } },
+  // R4 — grand vestibule, derrière les œuvres monumentales (z=43)
+  { room:'r4',        mount:{ wall:'W', x: 47,   y:2.6,  scale:1.4 } },
+  { room:'r4',        mount:{ wall:'E', x: 47,   y:2.6,  scale:1.4 } },
+  // Hall d'entrée
+  { room:'lobby',     mount:{ wall:'E', x:  0,   y:1.75, scale:0.8 } },
+  { room:'lobby',     mount:{ wall:'W', x:  0,   y:1.75, scale:0.8 } },
+  // Salle immersive — mur ouest
+  { room:'immersive', mount:{ wall:'W', x: 34,   y:2.3,  scale:1.1 } },
+];
+
 const WALL_OFFSET = 0.17; // distance from wall plane to painting face (wall half-thickness + 0.02)
 const loadedCartels = [];
 
@@ -51,15 +75,50 @@ export function setFrameStyle(name) {
   frameMaterial.needsUpdate = true;
 }
 
+async function loadImageList() {
+  // Lit images/manifest.json (généré par scripts/gen_manifests.py au démarrage).
+  // Si absent, fallback sur les 16 noms historiques haunted01..16.jpg.
+  try {
+    const r = await fetch('./images/manifest.json', { cache: 'no-cache' });
+    if (r.ok) {
+      const j = await r.json();
+      const items = j.items || [];
+      if (items.length) return items;
+    }
+  } catch (_) { /* fall through to fallback */ }
+  return Array.from({ length: 16 }, (_, i) => `haunted${String(i+1).padStart(2,'0')}.jpg`);
+}
+
+function slotFor(i) {
+  if (i < CATALOG.length) return CATALOG[i];
+  const ex = EXTRA_SLOTS[i - CATALOG.length];
+  if (!ex) return null;                           // overflow ignoré si plus de slots
+  return { num: `•${i - CATALOG.length + 1}`, title: '', year: '', note: '…', ...ex };
+}
+
+function prettyTitleFromFilename(name) {
+  return name
+    .replace(/\.[^.]+$/, '')         // strip extension
+    .replace(/^haunted\d+$/i, 'Sans titre')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim() || 'Sans titre';
+}
+
 export async function placePaintings(scene, rooms) {
   const loader = new THREE.TextureLoader();
-
+  const images = await loadImageList();
+  const total  = Math.min(images.length, CATALOG.length + EXTRA_SLOTS.length);
   const promises = [];
 
-  for (let i = 0; i < CATALOG.length; i++) {
-    const entry = CATALOG[i];
-    const imgNum = String(i + 1).padStart(2, '0');
-    const url = `./images/haunted${imgNum}.jpg`;
+  for (let i = 0; i < total; i++) {
+    const baseSlot = slotFor(i);
+    if (!baseSlot) break;
+    const isExtra = i >= CATALOG.length;
+    const entry = isExtra
+      ? { ...baseSlot, title: prettyTitleFromFilename(images[i]), note: "Pièce d'inventaire" }
+      : baseSlot;
+    const url = `./images/${images[i]}`;
 
     const p = new Promise((resolve) => {
       loader.load(url, (tex) => {

@@ -8,6 +8,9 @@ REM ============================================================
 
 cd /d "%~dp0"
 
+REM Regenere les manifest.json (images, musiques, textures)
+python scripts\gen_manifests.py
+
 REM Ouvre le navigateur dans 2 s (le temps que le serveur demarre)
 start "" /min cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:8080"
 

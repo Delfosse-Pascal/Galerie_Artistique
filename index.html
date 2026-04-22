@@ -9,7 +9,11 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0908; color: #e6ddd1; font-family: 'Georgia', 'Cormorant Garamond', serif; }
   #app { position: fixed; inset: 0; }
-  canvas { display: block; width: 100%; height: 100%; }
+  canvas {
+    display: block; width: 100%; height: 100%;
+    /* Red crosshair cursor — always visible */
+    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><circle cx='17' cy='17' r='13' fill='none' stroke='%23ff2020' stroke-width='1.6'/><circle cx='17' cy='17' r='1.6' fill='%23ff2020'/><line x1='17' y1='2' x2='17' y2='12' stroke='%23ff2020' stroke-width='1.6'/><line x1='17' y1='22' x2='17' y2='32' stroke='%23ff2020' stroke-width='1.6'/><line x1='2' y1='17' x2='12' y2='17' stroke='%23ff2020' stroke-width='1.6'/><line x1='22' y1='17' x2='32' y2='17' stroke='%23ff2020' stroke-width='1.6'/></svg>") 17 17, crosshair;
+  }
 
   #hud {
     position: fixed; left: 16px; bottom: 16px;
@@ -50,12 +54,12 @@
 
   /* ==================== ADMIN PANEL ==================== */
   #admin-toggle {
-    position: fixed; top: 14px; right: 14px; z-index: 6;
+    position: fixed; top: 14px; right: 14px; z-index: 9;
     width: 44px; height: 44px; border-radius: 8px;
     background: rgba(10,9,8,0.78); border: 1px solid #3a342c;
     color: #d7b274; font-size: 20px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(6px); transition: background .15s;
+    backdrop-filter: blur(6px); transition: right .25s ease, background .15s;
   }
   #admin-toggle:hover { background: rgba(26,22,18,0.95); }
 
@@ -75,6 +79,14 @@
     border-bottom: 1px solid #3a342c; padding-bottom: 10px; margin-bottom: 14px;
   }
   .admin-title .gear { margin-right: 6px; }
+  .admin-closebtn {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(40,35,30,0.85); border: 1px solid #3a342c;
+    color: #d7b274; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-closebtn:hover { background: rgba(80,55,40,0.95); color: #fff; }
   .admin-section {
     margin-top: 16px; margin-bottom: 8px;
     font-size: 12px; color: #a89a82; letter-spacing: .15em; text-transform: lowercase;
@@ -112,6 +124,24 @@
     padding: 10px 12px; line-height: 1.8; font-size: 12px; color: #c9bfa9;
   }
   .admin-stats b { color: #e6ddd1; }
+
+  .music-now {
+    background: rgba(20,17,14,0.85); border: 1px solid #3a342c;
+    padding: 8px 12px; border-radius: 6px; margin-bottom: 8px;
+    font-size: 12px; color: #d7b274; overflow: hidden; white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .music-row {
+    display: flex; gap: 6px; margin-bottom: 6px; align-items: center;
+  }
+  .music-mini {
+    flex: 1; padding: 8px 4px; font-size: 16px; margin: 0 !important;
+  }
+  .music-chk {
+    flex: 1; font-size: 12px; color: #c9bfa9; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .music-chk input { accent-color: #d7b274; }
 
   /* ==================== PAINTING MODAL (lightbox) ==================== */
   #painting-modal {
@@ -169,17 +199,16 @@
   <h1>Les Lieux Oubliés</h1>
   <p>Un parcours à travers l'œuvre de Maëlle Corvain (1842–1897), peintre symboliste des ruines, des landes et des demeures abandonnées.</p>
   <p>
-    <span class="key">Clic</span> verrouille la souris &nbsp;·&nbsp;
     <span class="key">W/S</span> ou <span class="key">↑/↓</span> avancer / reculer &nbsp;·&nbsp;
-    <span class="key">A/D</span> ou <span class="key">←/→</span> déplacement latéral
+    <span class="key">A/D</span> ou <span class="key">←/→</span> pas latéral
   </p>
   <p>
-    <span class="key">Souris X</span> tourner &nbsp;·&nbsp;
-    <span class="key">Souris Y</span> regarder haut/bas &nbsp;·&nbsp;
-    <span class="key">Shift + Souris Y</span> avancer/reculer &nbsp;·&nbsp;
-    <span class="key">Molette</span> zoom
+    Bouger la souris vers les <b>bords</b> pour tourner &nbsp;·&nbsp;
+    <span class="key">Molette</span> zoom &nbsp;·&nbsp;
+    <span class="key">Clic</span> sur un tableau pour l'ouvrir &nbsp;·&nbsp;
+    <span class="key">Esc</span> fermer
   </p>
-  <p style="color:#8a7f6a;font-size:12px;margin-top:18px">Collisions actives — aucun passage à travers la géométrie.</p>
+  <p style="color:#8a7f6a;font-size:12px;margin-top:18px">Collisions actives — viseur rouge toujours visible.</p>
   <button id="start-btn" disabled>Chargement...</button>
   <div id="loading">Préparation des salles</div>
 </div>

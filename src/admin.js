@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { paintingGroups, setFrameStyle } from './paintings.js';
+import * as Music from './music.js';
 
 // =======================================================================
 //  Admin panel — Mosaic texture manager + live scene tuning
@@ -73,7 +74,7 @@ async function loadManifest() {
     const r = await fetch(`./${state.folder}/manifest.json`, { cache: 'no-cache' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const j = await r.json();
-    state.textures = j.textures || [];
+    state.textures = j.items || j.textures || [];   // manifest schema: items (new) / textures (legacy)
     state.folder = j.folder || state.folder;
   } catch (e) {
     console.warn('Manifest texturegif introuvable —', e.message);
@@ -181,6 +182,7 @@ function buildUI() {
   if (!panel) return;
 
   panel.innerHTML = `
+    <button class="admin-closebtn" id="admin-close" title="Fermer (Esc)">✕</button>
     <div class="admin-title"><span class="gear">⚙</span> Administration</div>
 
     <div class="admin-section">Actions</div>
@@ -214,9 +216,29 @@ function buildUI() {
     <label class="admin-label" id="lbl-rot">Vitesse rotation : 0.0°/frame</label>
     <input id="admin-rot" class="admin-slider" type="range" min="0" max="30" value="0" />
 
+    <div class="admin-section">🎵 Musique</div>
+    <div class="music-now" id="music-now">—</div>
+    <div class="music-row">
+      <button class="admin-btn music-mini" data-m="prev"   title="Précédente">⏮</button>
+      <button class="admin-btn music-mini" data-m="toggle" title="Lecture/Pause" id="music-toggle">▶</button>
+      <button class="admin-btn music-mini" data-m="next"   title="Suivante">⏭</button>
+    </div>
+    <div class="music-row">
+      <label class="music-chk"><input type="checkbox" id="music-shuffle" /> 🔀 Aléatoire</label>
+      <label class="music-chk"><input type="checkbox" id="music-loop" /> 🔁 Boucle</label>
+    </div>
+    <label class="admin-label" id="lbl-vol">Volume : 55%</label>
+    <input id="music-vol" class="admin-slider" type="range" min="0" max="100" value="55" />
+
     <div class="admin-section">Statistiques</div>
     <div class="admin-stats" id="admin-stats"></div>
   `;
+
+  // Close button
+  panel.querySelector('#admin-close').addEventListener('click', () => {
+    panel.classList.remove('open');
+    window.dispatchEvent(new CustomEvent('admin:closed'));
+  });
 
   // Texture buttons
   panel.querySelectorAll('.admin-btn').forEach(b => {
@@ -252,6 +274,43 @@ function buildUI() {
   rot.addEventListener('input', () => {
     state.rotSpeedDeg = rot.value / 10;
     rotLbl.textContent = `Vitesse rotation : ${state.rotSpeedDeg.toFixed(1)}°/frame`;
+  });
+
+  // ------------ Music controls ------------
+  panel.querySelectorAll('[data-m]').forEach(b => {
+    b.addEventListener('click', () => {
+      const a = b.dataset.m;
+      if (a === 'toggle') Music.toggle();
+      else if (a === 'next') Music.next();
+      else if (a === 'prev') Music.prev();
+    });
+  });
+  const shuffleCk = panel.querySelector('#music-shuffle');
+  const loopCk    = panel.querySelector('#music-loop');
+  const volSlider = panel.querySelector('#music-vol');
+  const volLabel  = panel.querySelector('#lbl-vol');
+  const s0 = Music.getSnapshot();
+  shuffleCk.checked = s0.shuffle;
+  loopCk.checked    = s0.loop;
+  volSlider.value   = Math.round(s0.volume * 100);
+  volLabel.textContent = `Volume : ${Math.round(s0.volume * 100)}%`;
+  shuffleCk.addEventListener('change', () => Music.setShuffle(shuffleCk.checked));
+  loopCk.addEventListener('change',    () => Music.setLoop(loopCk.checked));
+  volSlider.addEventListener('input',  () => {
+    const v = volSlider.value / 100;
+    Music.setVolume(v);
+    volLabel.textContent = `Volume : ${volSlider.value}%`;
+  });
+
+  window.addEventListener('music:state', (e) => {
+    const s = e.detail;
+    const btn = document.getElementById('music-toggle');
+    const now = document.getElementById('music-now');
+    if (btn) btn.textContent = s.playing ? '⏸' : '▶';
+    if (now) {
+      const name = s.track ? s.track.replace(/\.[^.]+$/, '') : '—';
+      now.textContent = s.count ? `${s.idx + 1}/${s.count} · ${name}` : 'Aucune musique';
+    }
   });
 }
 
@@ -289,12 +348,13 @@ function updateStats() {
   const el = document.getElementById('admin-stats');
   if (!el) return;
   const frames = paintingGroups.length;
+  const m = Music.getSnapshot();
   el.innerHTML = `
-    <div>📁 Dossier : <b>${state.imageFolder}</b></div>
-    <div>🖼️ Images : <b>${frames}</b></div>
+    <div>📁 Dossier images : <b>${state.imageFolder}</b></div>
+    <div>🖼️ Tableaux affichés : <b>${frames}</b></div>
+    <div>🎵 Musiques : <b>${m.count}</b></div>
     <div>🎞️ Vidéos : <b>0</b></div>
-    <div>📂 Sous-dossiers : <b>1</b></div>
     <div>💾 Textures : <b>${state.textures.length}</b></div>
-    <div>🖼️ Cadres affichés : <b>${frames * 2}</b></div>
+    <div>🖼️ Cadres rendus : <b>${frames * 2}</b></div>
   `;
 }

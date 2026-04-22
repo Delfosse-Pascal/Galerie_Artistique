@@ -7,6 +7,8 @@ Thumbs.db
 .idea/
 
 # tiroirs médias — gardé localement, pas en dépôt
+# (manifest.json des tiroirs personnels NON versionné — évite d'exposer les noms
+#  de fichiers perso ; start.bat les régénère à chaque lancement)
 images/*
 !images/.gitkeep
 videos/*

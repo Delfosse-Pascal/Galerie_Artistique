@@ -3,6 +3,7 @@ import { buildMuseum } from './museum.js';
 import { placePaintings, updateCartels, paintingMeshes } from './paintings.js';
 import { Controls } from './controls.js';
 import { initAdmin, updateAdmin } from './admin.js';
+import { initMusic, startRandom as startRandomMusic } from './music.js';
 
 const app = document.getElementById('app');
 const startBtn = document.getElementById('start-btn');
@@ -46,6 +47,9 @@ const paintingsReady = placePaintings(scene, rooms);
 // ---------- Controls ----------
 const controls = new Controls(camera, renderer.domElement, colliders);
 
+// ---------- Music ----------
+initMusic();
+
 // ---------- Admin panel ----------
 paintingsReady.then(() =>
   initAdmin({ scene, renderer, camera, rooms, materials, hemi, ambient: keyAmbient })
@@ -53,13 +57,19 @@ paintingsReady.then(() =>
 
 const adminToggle = document.getElementById('admin-toggle');
 const adminPanel  = document.getElementById('admin-panel');
-adminToggle?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  adminPanel.classList.toggle('open');
-  if (document.pointerLockElement) document.exitPointerLock();
-});
+function toggleAdmin() {
+  const open = adminPanel.classList.toggle('open');
+  adminToggle.style.right = open ? '360px' : '14px';  // slide clear of panel when open
+  controls.enabled = !(open || modalOpen);             // freeze camera while any overlay is visible
+}
+adminToggle?.addEventListener('click', (e) => { e.stopPropagation(); toggleAdmin(); });
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'F1') { e.preventDefault(); adminPanel.classList.toggle('open'); }
+  if (e.key === 'F1') { e.preventDefault(); toggleAdmin(); }
+});
+// Admin panel may close itself (close button inside) — re-enable controls + reset toggle
+window.addEventListener('admin:closed', () => {
+  adminToggle.style.right = '14px';
+  controls.enabled = !modalOpen;
 });
 
 // ---------- Painting click → modal ----------
@@ -70,7 +80,6 @@ const modalTitle     = document.getElementById('modal-title');
 const modalDesc      = document.getElementById('modal-desc');
 const modalClose     = document.getElementById('modal-close');
 const raycaster      = new THREE.Raycaster();
-const centerNdc      = new THREE.Vector2(0, 0);
 let modalOpen        = false;
 
 function openPainting(pm) {
@@ -80,20 +89,24 @@ function openPainting(pm) {
   modalDesc.textContent  = pm.entry.note;
   paintingModal.classList.add('open');
   modalOpen = true;
-  if (document.pointerLockElement) document.exitPointerLock();
+  controls.enabled = false;
 }
 function closePainting() {
   paintingModal.classList.remove('open');
   modalOpen = false;
+  controls.enabled = !adminPanel.classList.contains('open');
 }
 
-// Click on painting (only while pointer locked — crosshair in centre).
-// Raycast against the full scene so walls and frames occlude distant paintings:
-// the painting only opens if it is the FIRST object hit along the line of sight.
-renderer.domElement.addEventListener('click', () => {
+// Click on painting — raycast from exact cursor NDC against full scene.
+// Walls/frames/benches occlude, so distant paintings only open with clear line of sight.
+renderer.domElement.addEventListener('click', (e) => {
   if (modalOpen) return;
-  if (!document.pointerLockElement) return; // first click just locks pointer
-  raycaster.setFromCamera(centerNdc, camera);
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+     ((e.clientX - rect.left) / rect.width)  * 2 - 1,
+    -((e.clientY - rect.top)  / rect.height) * 2 + 1
+  );
+  raycaster.setFromCamera(ndc, camera);
   const hits = raycaster.intersectObject(scene, true);
   if (!hits.length) return;
   const first = hits[0];
@@ -103,18 +116,15 @@ renderer.domElement.addEventListener('click', () => {
   }
 });
 
-// Esc closes modal (capture phase so Controls.js Esc handler ignores)
+// Esc closes modal first, then admin panel if open
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && modalOpen) {
-    e.stopPropagation();
-    e.preventDefault();
-    closePainting();
-  }
-}, true);
+  if (e.key !== 'Escape') return;
+  if (modalOpen)                          { closePainting(); return; }
+  if (adminPanel.classList.contains('open')) { toggleAdmin();  return; }
+});
 
 modalClose.addEventListener('click', closePainting);
 paintingModal.addEventListener('click', (e) => {
-  // click on dark backdrop (not on frame content) closes
   if (e.target === paintingModal) closePainting();
 });
 
@@ -134,7 +144,7 @@ paintingsReady.then(() => {
 startBtn.addEventListener('click', () => {
   startPanel.style.display = 'none';
   renderer.domElement.focus();
-  renderer.domElement.click();
+  startRandomMusic();   // autoplay ok : déclenché par geste utilisateur
 });
 
 // ---------- Loop ----------
