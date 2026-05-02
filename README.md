@@ -1,10 +1,10 @@
-# Musée Maëlle Corvain — Les Lieux Oubliés
+# Musée Delfosse Pascal — Artiste peintre
 
-Parcours 3D d'un musée fictif dédié à **Maëlle Corvain** (1842–1897), peintre
-symboliste des ruines, des landes et des demeures abandonnées. 16 œuvres
-canoniques traversant quatre périodes — *Jeunesse, Errance, Hantises, Derniers
-Lieux* — plus un atelier reconstitué, une salle immersive, et jusqu'à
-13 emplacements muraux supplémentaires pour vos propres images.
+Parcours 3D d'un musée fictif dédié à **Delfosse Pascal**, artiste peintre.
+16 œuvres canoniques traversant quatre périodes — *Jeunesse, Errance,
+Hantises, Derniers Lieux* — plus un atelier reconstitué, une salle
+immersive, et jusqu'à 13 emplacements muraux supplémentaires pour vos
+propres images.
 
 Rendu : Three.js (WebGL2), aucune dépendance à installer, importmap CDN.
 
@@ -118,7 +118,7 @@ Schéma du manifest `texturegif/manifest.json` :
 
 ## Emplacements de tableaux (29 slots)
 
-- **16 canoniques** (CATALOG, catalogue fictif Corvain, avec titre / année / cartel) répartis sur r1 (Jeunesse), r2 (Errance), r3 (Hantises), r4 (Derniers Lieux)
+- **16 canoniques** (CATALOG, catalogue fictif Delfosse Pascal, avec titre / année / cartel) répartis sur r1 (Jeunesse), r2 (Errance), r3 (Hantises), r4 (Derniers Lieux)
 - **13 extras** (EXTRA_SLOTS, titre auto = nom de fichier nettoyé) :
   - r1 Est/Ouest : 3+3 = 6 slots
   - r2 Est/Ouest : 1+1 = 2 slots
@@ -184,7 +184,7 @@ Galerie_Artistique/
 
 ## Catalogue fictif (16 œuvres canoniques)
 
-Maëlle Corvain (1842–1897) — période romantique tardive / symbolisme noir.
+Delfosse Pascal — artiste peintre.
 
 - **I. Jeunesse** (salle 1) : *Lande au vent tombant* (1862), *Le chemin vers Ar-Mor* (1865), *Manoir au retour des foins* (1867), *Clairière d'octobre* (1870).
 - **II. Errance** (salle 2) : *Pont brisé sur l'Enn* (1872), *Route d'Arvor sous la pluie* (1874), *Ferme abandonnée à Logoù* (1876), *Le silence des halliers* (1878).

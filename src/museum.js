@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // ----------------------------------------------------------------------------
-// Musée Maëlle Corvain — plan au sol
+// Musée Delfosse Pascal — Artiste peintre — plan au sol
 //
 // Axe Z = profondeur (entrée à z=-3, fond à z=51).
 // Toutes les salles axées sur x=0 (sauf branches atelier/immersive).

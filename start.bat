@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  Musee Maelle Corvain — lancement local
+REM  Musee Delfosse Pascal — Artiste peintre — lancement local
 REM  - se place dans le dossier du projet
 REM  - ouvre le navigateur sur http://localhost:8080
 REM  - demarre le serveur Python (Ctrl+C pour arreter)

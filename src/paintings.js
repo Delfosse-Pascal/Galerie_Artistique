@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// Oeuvres de Maëlle Corvain (1842–1897) — catalogue fictif
+// Oeuvres de Delfosse Pascal — Artiste peintre — catalogue fictif
 // Chaque entrée correspond à l'une des 16 toiles du dossier /images.
 const CATALOG = [
   { num: 'I',    title: 'Lande au vent tombant',            year: '1862', room: 'r1', mount: { wall: 'N', x: -3, y: 1.8, scale: 1.0 }, note: "Première toile connue. La peintre a dix-neuf ans." },
@@ -241,7 +241,7 @@ function makeCartel(entry, paintingW) {
   ctx.fillStyle = '#8a7f6a';
   ctx.font = '14px Georgia';
   ctx.textAlign = 'right';
-  ctx.fillText('Maëlle Corvain', c.width - 20, c.height - 16);
+  ctx.fillText('Delfosse Pascal', c.width - 20, c.height - 16);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
