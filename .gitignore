@@ -6,9 +6,17 @@ Thumbs.db
 .vscode/
 .idea/
 
-# tiroirs médias — gardé localement, pas en dépôt
-# (manifest.json des tiroirs personnels NON versionné — évite d'exposer les noms
-#  de fichiers perso ; start.bat les régénère à chaque lancement)
+# Archives — jamais commit
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# Tiroirs médias — gardés localement, pas en dépôt.
+# (Les manifest.json/.js sont régénérés à chaque lancement par start.bat
+#  ou `python scripts/gen_manifests.py`, donc inutile de les versionner.)
 images/*
 !images/.gitkeep
 videos/*
@@ -17,4 +25,12 @@ musiques/*
 !musiques/.gitkeep
 texturegif/*
 !texturegif/.gitkeep
-!texturegif/manifest.json
+!texturegif/mur/
+!texturegif/plafond/
+!texturegif/sol/
+texturegif/mur/*
+!texturegif/mur/.gitkeep
+texturegif/plafond/*
+!texturegif/plafond/.gitkeep
+texturegif/sol/*
+!texturegif/sol/.gitkeep

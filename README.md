@@ -13,6 +13,11 @@ Rendu : Three.js (WebGL2), aucune dépendance à installer, importmap CDN.
 > qui donne la nausée). **Shift** maintenu = courir. La caméra verticale est
 > figée pour éviter le mal de mer. Cliquer sans glisser sur un tableau ouvre
 > une fiche plein écran. Panneau administration `F1` ou `F10`.
+>
+> **Démarrage direct** — plus d'écran d'accueil, plus de bouton "Entrer".
+> Le navigateur s'ouvre directement sur la galerie. La musique se lance
+> au premier clic ou appui-touche (les navigateurs imposent un geste
+> utilisateur avant tout `<audio>.play()`).
 
 ## Lancer le musée
 
@@ -27,10 +32,15 @@ Le script :
 2. lance `python -m http.server 8080`
 3. ouvre automatiquement le navigateur sur `http://localhost:8080`
 
+> **Pourquoi un serveur HTTP ?** Le code utilise des ES modules
+> (`<script type="module">`) que Chrome/Edge bloquent en `file://`
+> pour cause de CORS. `start.bat` lance un mini serveur Python local —
+> aucune dépendance à installer, ferme avec `Ctrl+C`.
+
 ### Option manuelle
 
 ```bash
-# Python 3 (re-scan des dossiers)
+# Python 3 (re-scan des tiroirs après ajout / suppression de fichiers)
 python scripts/gen_manifests.py
 
 # Serveur statique
@@ -90,18 +100,26 @@ Ouvrir avec `F1` / `F10` ou l'icône ⚙. Actions disponibles :
 
 ## Tiroirs médias (auto-scannés)
 
-Placez librement vos fichiers dans ces dossiers, puis relancez `start.bat`.
+Placez librement vos fichiers dans ces dossiers, puis relancez `start.bat`
+(qui régénère les manifests avant de servir la page).
 
 | Dossier | Formats | Usage |
 |---|---|---|
 | `images/` | `.jpg .jpeg .png .webp` | tableaux du musée — ordre alphabétique, 29 emplacements max |
-| `musiques/` | `.mp3 .ogg .wav .m4a .flac` | pistes du lecteur, démarrage aléatoire |
+| `musiques/` | `.mp3 .ogg .wav .m4a .flac` | pistes du lecteur, démarrage aléatoire au 1er clic |
 | `texturegif/mur/` | `.gif .jpg .jpeg .png .webp` | textures réservées aux murs |
 | `texturegif/plafond/` | idem | textures réservées aux plafonds |
 | `texturegif/sol/` | idem | textures réservées aux sols |
 | `videos/` | — | emplacement réservé |
 
-Le générateur `scripts/gen_manifests.py` construit les `manifest.json` correspondants que le front récupère au chargement.
+> **Source unique de vérité** — la galerie n'utilise *que* les fichiers
+> réellement présents dans `images/`. Aucun nom codé en dur, aucun
+> placeholder. Si le dossier est vide, aucune toile n'est placée
+> (les emplacements muraux restent simplement nus).
+
+Le générateur `scripts/gen_manifests.py` construit les `manifest.json`
+correspondants que le front récupère au chargement (lancé automatiquement
+par `start.bat`).
 
 **Textures cloisonnées par surface** — chaque sous-dossier `texturegif/{mur,plafond,sol}` alimente uniquement sa propre surface. Le tirage aléatoire à l'ouverture, le bouton `🎲 Aléatoire` et le cycle `Changer texture des murs/plafond/sol` restent strictement dans le pool correspondant : une texture placée dans `texturegif/sol/` ne peut jamais apparaître au plafond ou sur un mur.
 
@@ -132,18 +150,18 @@ Si vous dépassez 29 images, les surplus sont ignorés (warning console).
 
 ```
 Galerie_Artistique/
-├── index.html             # page, importmap CDN, UI (start, HUD, cartel, admin, modal)
+├── index.html             # entrée directe galerie (HUD, cartel, admin, modal)
 ├── start.bat              # launcher Windows (regen manifests + serveur + navigateur)
 ├── scripts/
 │   └── gen_manifests.py   # scan images/musiques/texturegif → manifest.json
 ├── src/
-│   ├── main.js            # boucle de rendu, scène, tone-mapping, wiring
-│   ├── museum.js          # architecture : salles, couloirs, éclairage, atelier, salle immersive
+│   ├── main.js            # boucle rendu + auto-start musique au 1er geste
+│   ├── museum.js          # architecture : salles, couloirs, éclairage, atelier, immersive
 │   ├── paintings.js       # catalogue + slots extras, chargement via manifest, cartels
 │   ├── controls.js        # caméra FPS drag-to-look + sprint Shift + collisions AABB
 │   ├── music.js           # lecteur audio, shuffle/loop/volume
 │   └── admin.js           # panneau admin (textures, cadres, ambiance, musique, stats)
-├── images/                # tiroir tableaux (non versionné, sauf .gitkeep + manifest.json)
+├── images/                # tiroir tableaux (non versionné, sauf .gitkeep)
 ├── musiques/              # tiroir audio (non versionné)
 ├── videos/                # tiroir vidéo (non versionné)
 ├── texturegif/            # tiroir textures (non versionné)
@@ -154,6 +172,12 @@ Galerie_Artistique/
 ├── .gitignore
 └── README.md
 ```
+
+> **Repo public** — les tiroirs `images/`, `musiques/`, `videos/`,
+> `texturegif/` sont versionnés vides (`.gitkeep`) ; les médias persos
+> restent locaux. Les manifests `*.json` sont également ignorés —
+> chaque clone du projet régénère les siens via `start.bat` ou
+> `python scripts/gen_manifests.py`.
 
 ## Plan au sol
 
