@@ -76,17 +76,16 @@ export function setFrameStyle(name) {
 }
 
 async function loadImageList() {
-  // Lit images/manifest.json (généré par scripts/gen_manifests.py au démarrage).
-  // Si absent, fallback sur les 16 noms historiques haunted01..16.jpg.
+  // Source unique : fichiers réellement présents dans /images.
+  // Aucun fallback codé en dur — si le dossier est vide, aucune toile placée.
   try {
     const r = await fetch('./images/manifest.json', { cache: 'no-cache' });
     if (r.ok) {
       const j = await r.json();
-      const items = j.items || [];
-      if (items.length) return items;
+      if (Array.isArray(j.items)) return j.items;
     }
-  } catch (_) { /* fall through to fallback */ }
-  return Array.from({ length: 16 }, (_, i) => `haunted${String(i+1).padStart(2,'0')}.jpg`);
+  } catch (_) { /* manifest absent → liste vide */ }
+  return [];
 }
 
 function slotFor(i) {

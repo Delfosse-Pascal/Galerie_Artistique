@@ -6,9 +6,6 @@ import { initAdmin, updateAdmin } from './admin.js';
 import { initMusic, startRandom as startRandomMusic } from './music.js';
 
 const app = document.getElementById('app');
-const startBtn = document.getElementById('start-btn');
-const loading = document.getElementById('loading');
-const startPanel = document.getElementById('start');
 const roomName = document.getElementById('room-name');
 
 // ---------- Renderer ----------
@@ -136,17 +133,17 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ---------- Start button ----------
-paintingsReady.then(() => {
-  loading.textContent = 'Prêt à entrer.';
-  startBtn.disabled = false;
-  startBtn.textContent = 'Entrer dans le musée';
-});
-startBtn.addEventListener('click', () => {
-  startPanel.style.display = 'none';
-  renderer.domElement.focus();
-  startRandomMusic();   // autoplay ok : déclenché par geste utilisateur
-});
+// ---------- Auto-start musique au premier geste utilisateur ----------
+// Plus de splash : la galerie est visible immédiatement. La musique se
+// déclenche au tout premier clic ou appui-touche (autoplay block).
+let musicStarted = false;
+function kickMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+  startRandomMusic();
+}
+window.addEventListener('pointerdown', kickMusic, { once: true });
+window.addEventListener('keydown',     kickMusic, { once: true });
 
 // ---------- Loop ----------
 const clock = new THREE.Clock();
